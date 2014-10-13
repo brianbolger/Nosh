@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Nancy;
+using Nancy.ModelBinding;
 using Nosh.Api.Model;
 using Raven.Client;
 
@@ -27,6 +28,9 @@ namespace Nosh.Api.Modules
 
 			Get["/users/{user}"] = p => GetUserByName(p.user.ToString());
 			Get["/users/{user}/orders"] = p => GetOrdersByUser(p.user.ToString());
+
+			Post["/users"] = p => AddUser(this.Bind<User>());
+			Post["/orders"] = p => AddOrder(this.Bind<Order>());
 		}
 
 		private Response GetLocations()
@@ -59,7 +63,21 @@ namespace Nosh.Api.Modules
 
 		private Response GetOrdersByUser(string userName)
 		{
-			return Response.AsJson(DocumentSession.Query<Order>().Where(o => o.UserName.Equals(userName, StringComparison.OrdinalIgnoreCase)));
+			return Response.AsJson(DocumentSession.Query<Order>().Where(o => o.User.Name.Equals(userName, StringComparison.OrdinalIgnoreCase)));
+		}
+
+		private Response AddUser(User user)
+		{
+			DocumentSession.Store(user);
+			DocumentSession.SaveChanges();
+			return HttpStatusCode.Accepted;
+		}
+
+		private Response AddOrder(Order order)
+		{
+			DocumentSession.Store(order);
+			DocumentSession.SaveChanges();
+			return HttpStatusCode.Accepted;
 		}
 	}
 }
