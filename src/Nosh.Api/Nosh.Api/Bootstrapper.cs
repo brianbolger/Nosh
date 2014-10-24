@@ -1,4 +1,5 @@
-﻿using Nancy;
+﻿using System.Configuration;
+using Nancy;
 using Nancy.TinyIoc;
 using Raven.Client;
 using Raven.Client.Document;
@@ -13,7 +14,9 @@ namespace Nosh.Api
 
 			var documentStore = new DocumentStore
 				{
-					ConnectionStringName = "NoshDB"
+					Url = ConfigurationManager.AppSettings["NoshDB_Url"],
+					ApiKey = ConfigurationManager.AppSettings["NoshDB_ApiKey"],
+					DefaultDatabase = ConfigurationManager.AppSettings["NoshDB_Name"]
 				};
 
 			documentStore.Initialize();
