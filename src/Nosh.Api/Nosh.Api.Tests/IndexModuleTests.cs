@@ -27,7 +27,7 @@ namespace Nosh.Api.Tests
 				};
 
 			var browser = GetConfiguredBrowser();
-			var response = browser.Post("/users", with => with.JsonBody(user));
+			var response = browser.Post("/api/users", with => with.JsonBody(user));
 			Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
 
 			using (var session = GetDocumentSession())
@@ -51,7 +51,7 @@ namespace Nosh.Api.Tests
 				};
 
 			var browser = GetConfiguredBrowser();
-			var response = browser.Post("/orders", with => with.JsonBody(order));
+			var response = browser.Post("/api/orders", with => with.JsonBody(order));
 
 			Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
 

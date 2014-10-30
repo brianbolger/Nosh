@@ -11,7 +11,7 @@ namespace Nosh.Api.Modules
 	{
 		private IDocumentSession DocumentSession { get; set; }
 
-		public IndexModule(IDocumentSession documentSession)
+		public IndexModule(IDocumentSession documentSession) : base("/api")
 		{
 			DocumentSession = documentSession;
 
