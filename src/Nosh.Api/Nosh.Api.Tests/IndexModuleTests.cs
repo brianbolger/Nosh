@@ -8,6 +8,7 @@ using Nosh.Api.Modules;
 using Raven.Client;
 using Raven.Client.Document;
 using Raven.Client.Embedded;
+using Raven.Client.Indexes;
 using Xunit;
 
 namespace Nosh.Api.Tests
@@ -19,11 +20,11 @@ namespace Nosh.Api.Tests
 		[Fact]
 		public void POST_User()
 		{
-			const string joey = "Joey";
+			const string userName = "Brian";
 
 			var user = new User
 				{
-					Name = joey
+					Name = userName
 				};
 
 			var browser = GetConfiguredBrowser();
@@ -32,7 +33,7 @@ namespace Nosh.Api.Tests
 
 			using (var session = GetDocumentSession())
 			{
-					var savedUser = session.Load<User>(string.Format("users/{0}", joey));
+					var savedUser = session.Load<User>(string.Format("users/{0}", userName));
 					Assert.Equal(user.Name, savedUser.Name);
 			}
 		}
@@ -47,7 +48,7 @@ namespace Nosh.Api.Tests
 					Id = orderId,
 					Contents = "Ham sambo",
 					Price = 3.99m,
-					UserId = GetUserIdByName("Joey")
+					UserId = "users/Joey"
 				};
 
 			var browser = GetConfiguredBrowser();
@@ -72,7 +73,7 @@ namespace Nosh.Api.Tests
 				Id = orderId,
 				Contents = "Bag o chips",
 				Price = 2.50m,
-				UserId = GetUserIdByName("Joey")
+				UserId = "users/Joey"
 			};
 
 			var browser = GetConfiguredBrowser();
@@ -85,12 +86,6 @@ namespace Nosh.Api.Tests
 			Assert.Contains(order, userOrders);
 
 		}
-		private string GetUserIdByName(string name)
-		{
-			// Might need to create this if it doesn't exist...
-
-			return GetDocumentSession().Query<User>().FirstOrDefault(u => u.Name == name).Id;
-		}
 
 		private static IDocumentStore DocumentStore
 		{
@@ -99,19 +94,31 @@ namespace Nosh.Api.Tests
 				if (_documentStore != null)
 					return _documentStore;
 
-				//_documentStore = new EmbeddableDocumentStore
-				//	{
-				//		RunInMemory = true,
-				//	};
-
-				_documentStore = new DocumentStore
+				_documentStore = new EmbeddableDocumentStore
 					{
-						ConnectionStringName = "NoshDB"
+						RunInMemory = true
 					};
 
+				//_documentStore = new DocumentStore
+				//	{
+				//		ConnectionStringName = "NoshDB"
+				//	};
+
 				_documentStore.Initialize();
+				IndexCreation.CreateIndexes(typeof(IndexModule).Assembly, _documentStore);
+
+				CreateDefaultUser("Joey");
 
 				return _documentStore;
+			}
+		}
+
+		private static void CreateDefaultUser(string userName)
+		{
+			using (var session = GetDocumentSession())
+			{
+				session.Store(new User { Name = userName }, string.Format("users/{0}", userName));
+				session.SaveChanges();
 			}
 		}
 
