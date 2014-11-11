@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Nancy;
 using Nancy.Testing;
@@ -18,12 +19,11 @@ namespace Nosh.Api.Tests
 		[Fact]
 		public void POST_User()
 		{
-			var userId = Guid.NewGuid().ToString();
+			const string joey = "Joey";
 
 			var user = new User
 				{
-					Id = userId,
-					Name = "Joey"
+					Name = joey
 				};
 
 			var browser = GetConfiguredBrowser();
@@ -32,8 +32,8 @@ namespace Nosh.Api.Tests
 
 			using (var session = GetDocumentSession())
 			{
-					var savedUser = session.Load<User>(userId);
-					Assert.Equal(user, savedUser);
+					var savedUser = session.Load<User>(string.Format("users/{0}", joey));
+					Assert.Equal(user.Name, savedUser.Name);
 			}
 		}
 
@@ -47,7 +47,7 @@ namespace Nosh.Api.Tests
 					Id = orderId,
 					Contents = "Ham sambo",
 					Price = 3.99m,
-					User = GetUserByName("Joey")
+					UserId = GetUserIdByName("Joey")
 				};
 
 			var browser = GetConfiguredBrowser();
@@ -62,11 +62,34 @@ namespace Nosh.Api.Tests
 			}
 		}
 
-		private User GetUserByName(string name)
+		[Fact]
+		public void GET_OrdersByUser()
+		{
+			var orderId = Guid.NewGuid().ToString();
+
+			var order = new Order
+			{
+				Id = orderId,
+				Contents = "Bag o chips",
+				Price = 2.50m,
+				UserId = GetUserIdByName("Joey")
+			};
+
+			var browser = GetConfiguredBrowser();
+			browser.Post("/api/orders", with => with.JsonBody(order));
+
+			var response = browser.Get("/api/users/joey/orders");
+			Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+			var userOrders = response.Body.DeserializeJson<IList<Order>>();
+			Assert.Contains(order, userOrders);
+
+		}
+		private string GetUserIdByName(string name)
 		{
 			// Might need to create this if it doesn't exist...
 
-			return GetDocumentSession().Query<User>().FirstOrDefault(u => u.Name == name);
+			return GetDocumentSession().Query<User>().FirstOrDefault(u => u.Name == name).Id;
 		}
 
 		private static IDocumentStore DocumentStore
@@ -76,15 +99,15 @@ namespace Nosh.Api.Tests
 				if (_documentStore != null)
 					return _documentStore;
 
-				_documentStore = new EmbeddableDocumentStore
-					{
-						RunInMemory = true,
-					};
-
-				//_documentStore = new DocumentStore
+				//_documentStore = new EmbeddableDocumentStore
 				//	{
-				//		ConnectionStringName = "NoshDB"
+				//		RunInMemory = true,
 				//	};
+
+				_documentStore = new DocumentStore
+					{
+						ConnectionStringName = "NoshDB"
+					};
 
 				_documentStore.Initialize();
 

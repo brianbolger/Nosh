@@ -66,6 +66,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Bootstrapper.cs" />
+    <Compile Include="Indexes\Orders_ByUserName.cs" />
     <Compile Include="Model\MenuItem.cs" />
     <Compile Include="Model\Location.cs" />
     <Compile Include="Model\Menu.cs" />

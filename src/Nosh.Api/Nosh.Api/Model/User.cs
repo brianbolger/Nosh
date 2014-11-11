@@ -13,7 +13,7 @@ namespace Nosh.Api.Model
 		{
 			if (ReferenceEquals(null, other)) return false;
 			if (ReferenceEquals(this, other)) return true;
-			return string.Equals(Id, other.Id);
+			return string.Equals(Id, other.Id) && string.Equals(Name, other.Name);
 		}
 
 		public override bool Equals(object obj)
@@ -26,7 +26,10 @@ namespace Nosh.Api.Model
 
 		public override int GetHashCode()
 		{
-			return (Id != null ? Id.GetHashCode() : 0);
+			unchecked
+			{
+				return ((Id != null ? Id.GetHashCode() : 0)*397) ^ (Name != null ? Name.GetHashCode() : 0);
+			}
 		}
 
 		public static bool operator ==(User left, User right)

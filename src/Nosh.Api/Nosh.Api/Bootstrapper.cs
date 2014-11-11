@@ -1,8 +1,10 @@
 ﻿using System.Configuration;
 using Nancy;
 using Nancy.TinyIoc;
+using Nosh.Api.Modules;
 using Raven.Client;
 using Raven.Client.Document;
+using Raven.Client.Indexes;
 
 namespace Nosh.Api
 {
@@ -21,6 +23,7 @@ namespace Nosh.Api
 
 			documentStore.Initialize();
 			container.Register(documentStore, "DocumentStore");
+			IndexCreation.CreateIndexes(typeof(IndexModule).Assembly, documentStore);
 		}
 
 		protected override void ConfigureRequestContainer(TinyIoCContainer container, NancyContext context)

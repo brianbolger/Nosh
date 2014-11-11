@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Nancy;
 using Nancy.ModelBinding;
+using Nosh.Api.Indexes;
 using Nosh.Api.Model;
 using Raven.Client;
 
@@ -63,12 +65,21 @@ namespace Nosh.Api.Modules
 
 		private Response GetOrdersByUser(string userName)
 		{
-			return Response.AsJson(DocumentSession.Query<Order>().Where(o => o.User.Name.Equals(userName, StringComparison.OrdinalIgnoreCase)));
+			using (var session = DocumentSession)
+			{
+				var ordersByUser = session.Query<Orders_ByUserName.Result, Orders_ByUserName>().Where(o => o.UserName.Equals(userName, StringComparison.OrdinalIgnoreCase));
+
+				// Not convinced that retrieving the ids & loading them is the best way,
+				//  surely I can ask the index for the results directly...?
+
+				var orderIds = ordersByUser.Select(obu => obu.Id);
+				return Response.AsJson(session.Load<Order>(orderIds));
+			}
 		}
 
 		private Response AddUser(User user)
 		{
-			DocumentSession.Store(user);
+			DocumentSession.Store(user, string.Format("users/{0}", user.Name));
 			DocumentSession.SaveChanges();
 			return HttpStatusCode.Accepted;
 		}
