@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Nancy;
 using Nancy.Testing;
 using Nosh.Api.Model;
 using Nosh.Api.Modules;
 using Raven.Client;
+using Raven.Client.Document;
 using Raven.Client.Embedded;
 using Raven.Client.Indexes;
 using Xunit;
@@ -99,6 +101,7 @@ namespace Nosh.Api.Tests
 				//		ConnectionStringName = "NoshDB"
 				//	};
 
+				_documentStore.Conventions.DefaultQueryingConsistency = ConsistencyOptions.AlwaysWaitForNonStaleResultsAsOfLastWrite;
 				_documentStore.Initialize();
 				IndexCreation.CreateIndexes(typeof(IndexModule).Assembly, _documentStore);
 
