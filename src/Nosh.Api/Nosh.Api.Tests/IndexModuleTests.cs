@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Nancy;
 using Nancy.Testing;
 using Nosh.Api.Model;
 using Nosh.Api.Modules;
 using Raven.Client;
-using Raven.Client.Document;
 using Raven.Client.Embedded;
 using Raven.Client.Indexes;
 using Xunit;
@@ -33,8 +31,8 @@ namespace Nosh.Api.Tests
 
 			using (var session = GetDocumentSession())
 			{
-					var savedUser = session.Load<User>(string.Format("users/{0}", userName));
-					Assert.Equal(user.Name, savedUser.Name);
+				var savedUser = session.Load<User>(string.Format("users/{0}", userName));
+				Assert.Equal(user.Name, savedUser.Name);
 			}
 		}
 
@@ -48,7 +46,7 @@ namespace Nosh.Api.Tests
 					Id = orderId,
 					Contents = "Ham sambo",
 					Price = 3.99m,
-					UserId = "users/Joey"
+					UserId = "users/joey"
 				};
 
 			var browser = GetConfiguredBrowser();
@@ -66,25 +64,22 @@ namespace Nosh.Api.Tests
 		[Fact]
 		public void GET_OrdersByUser()
 		{
-			var orderId = Guid.NewGuid().ToString();
-
 			var order = new Order
-			{
-				Id = orderId,
-				Contents = "Bag o chips",
-				Price = 2.50m,
-				UserId = "users/Joey"
-			};
+				{
+					Id = Guid.NewGuid().ToString(),
+					Contents = "Bag o chips",
+					Price = 2.50m,
+					UserId = "users/joey"	
+				};
+
+			CreateOrder(order);
 
 			var browser = GetConfiguredBrowser();
-			browser.Post("/api/orders", with => with.JsonBody(order));
-
 			var response = browser.Get("/api/users/joey/orders");
 			Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
 			var userOrders = response.Body.DeserializeJson<IList<Order>>();
 			Assert.Contains(order, userOrders);
-
 		}
 
 		private static IDocumentStore DocumentStore
@@ -118,6 +113,15 @@ namespace Nosh.Api.Tests
 			using (var session = GetDocumentSession())
 			{
 				session.Store(new User { Name = userName }, string.Format("users/{0}", userName));
+				session.SaveChanges();
+			}
+		}
+		
+		private static void CreateOrder(Order order)
+		{
+			using (var session = GetDocumentSession())
+			{
+				session.Store(order);
 				session.SaveChanges();
 			}
 		}
