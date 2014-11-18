@@ -27,6 +27,14 @@ angular
         templateUrl: 'views/about.html',
         controller: 'AboutCtrl'
       })
+      .when('/menus/:menuId', {
+        templateUrl: 'views/menus.html',
+        controller: 'MenuDetailsCtrl'
+      })
+      .when('/orders', {
+        templateUrl: 'views/orders.html',
+        controller: 'OrdersCtrl'
+      })
       .otherwise({
         redirectTo: '/'
       });
