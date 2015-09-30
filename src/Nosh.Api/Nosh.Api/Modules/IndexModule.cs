@@ -17,7 +17,7 @@ namespace Nosh.Api.Modules
 		{
 			DocumentSession = documentSession;
 
-			Get["/"] = p => "Nosh API root";
+			Get["/"] = p => "Nosh API Root";
 
 			Get["/locations"] = p => GetLocations();
 			Get["/locations/{location}"] = p => GetLocationByName(p.location.ToString());
