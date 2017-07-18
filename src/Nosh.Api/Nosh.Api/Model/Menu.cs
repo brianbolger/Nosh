@@ -19,6 +19,7 @@ namespace Nosh.Api.Model
 		public void AddSection(Section section)
 		{
 			_sections.Add(section);
+			
 		}
 
 		public override string ToString()
